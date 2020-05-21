@@ -1,0 +1,7 @@
+*.user
+
+[Bb]in/
+[Bb]uild/[Dd]ebug/
+[Bb]uild/[Rr]elease/
+
+.vs/
