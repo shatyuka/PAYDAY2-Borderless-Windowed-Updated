@@ -1,12 +1,12 @@
 # PAYDAY2 Borderless Windowed Updated
 
-This is an updated mod/plugin to enable the borderless windowed feature of PAYDAY 2.
+This is an updated plugin to enable the fullscreen/borderless windowed feature of PAYDAY 2.
 
-This plugin only works when the size of the windowed game is the same as your screen resolution. That is, you will able to see the border if you want a small window.
+This plugin adds a new display mode called "Fullscreen Windowed", while the original windowed mode is also retained.
 
 ## Installation
 
-Simply unzip the zip file to `PAYDAY 2\mods`.
+Simply extract the zip archive to "PAYDAY 2\mods".
 
 ## Credits
 

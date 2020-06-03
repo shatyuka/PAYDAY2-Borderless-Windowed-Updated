@@ -2,76 +2,54 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <thread>
-#include <mutex>
 
-enum class STATE
+HWND g_hWnd;
+
+void Windowed()
 {
-	HOLD,
-	BORDERLESS,
-	WINDOWED
-};
-
-STATE GetState(HWND hWnd)
-{
-	LONG lExstyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-	if (lExstyle & WS_EX_TOPMOST)
-		return STATE::HOLD;
-
-	RECT c, d;
-	GetClientRect(hWnd, &c);
-	GetWindowRect(GetDesktopWindow(), &d);
-
-	if (c.right - c.left >= d.right - d.left && c.bottom - c.top >= d.bottom - d.top)
-	{
-		if (lExstyle & WS_EX_OVERLAPPEDWINDOW)
-			return STATE::BORDERLESS;
-		else
-			return STATE::HOLD;
-	}
-	else if (lExstyle & WS_EX_OVERLAPPEDWINDOW)
-		return STATE::HOLD;
-	else
-		return STATE::WINDOWED;
+	SetWindowLong(g_hWnd, GWL_STYLE, WS_CAPTION | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_MINIMIZEBOX);
+	SetWindowLong(g_hWnd, GWL_EXSTYLE, WS_EX_OVERLAPPEDWINDOW);
 }
 
-void SetToNoboarder(HWND hWnd)
+void FullscreenWindowed()
 {
-	while (true)
-	{
-		STATE state = GetState(hWnd);
-		if (state == STATE::BORDERLESS)
-		{
-			SetWindowLong(hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE | WS_CLIPSIBLINGS);
-			SetWindowLong(hWnd, GWL_EXSTYLE, 0);
+	Sleep(100);
+	SetWindowLong(g_hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE | WS_CLIPSIBLINGS);
+	SetWindowLong(g_hWnd, GWL_EXSTYLE, 0);
+	RECT rect;
+	GetWindowRect(GetDesktopWindow(), &rect);
+	SetWindowPos(g_hWnd, 0, 0, 0, rect.right, rect.bottom, SWP_FRAMECHANGED);
+}
 
-			RECT rect;
-			GetWindowRect(GetDesktopWindow(), &rect);
-			SetWindowPos(hWnd, 0, 0, 0, rect.right, rect.bottom, SWP_FRAMECHANGED);
-		}
-		else if (state == STATE::WINDOWED)
-		{
-			SetWindowLong(hWnd, GWL_STYLE, WS_CAPTION | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_MINIMIZEBOX);
-			SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_OVERLAPPEDWINDOW);
-		}
-		std::this_thread::yield();
+int ChangeDisplayMode(lua_State* L)
+{
+	int mode = luaL_checkint(L, 1);
+	switch(mode)
+	{
+	case 0:
+		break;
+	case 1:
+		std::thread(Windowed).detach();
+		break;
+	case 2:
+		std::thread(FullscreenWindowed).detach();
+		break;
+	default:
+		PD2HOOK_LOG_ERROR("Parameter error");
 	}
+	return 0;
 }
 
 void Plugin_Init()
 {
 	PD2HOOK_LOG_LOG("Initializing Borderless Windowed Updated");
-	HWND hWnd = FindWindow(L"diesel win32", L"PAYDAY 2");
-	if (!hWnd)
+	g_hWnd = FindWindow(L"diesel win32", L"PAYDAY 2");
+	if (!g_hWnd)
 	{
 		PD2HOOK_LOG_ERROR("Failed to find PAYDAY 2 window.");
 		return;
 	}
 	PD2HOOK_LOG_LOG("Borderless Windowed Updated loaded successfully.");
-	
-	// Simply modify the (ex)style of window via SetWindowLong will jam the program.
-	// However, with my intuition, I invoke the proceduere in a new thread, and it works!
-	// I don't know why, it might be something about dead lock. It works, that's all. :D
-	std::thread(SetToNoboarder, hWnd).detach();
 }
 
 void Plugin_Update()
@@ -85,5 +63,10 @@ void Plugin_Setup_Lua(lua_State* L)
 
 int Plugin_PushLua(lua_State* L)
 {
-	return 0;
+	lua_newtable(L);
+
+	lua_pushcfunction(L, ChangeDisplayMode);
+	lua_setfield(L, -2, "change_display_mode");
+	
+	return 1;
 }
