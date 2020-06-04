@@ -5,10 +5,21 @@
 
 HWND g_hWnd;
 
-void Windowed()
+#define PAYDAY2_WINDOWED_STYLE (WS_CAPTION | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_MINIMIZEBOX)
+
+void Windowed(int width, int height)
 {
-	SetWindowLong(g_hWnd, GWL_STYLE, WS_CAPTION | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_MINIMIZEBOX);
+	SetWindowLong(g_hWnd, GWL_STYLE, PAYDAY2_WINDOWED_STYLE);
 	SetWindowLong(g_hWnd, GWL_EXSTYLE, WS_EX_OVERLAPPEDWINDOW);
+	RECT rect;
+	GetWindowRect(GetDesktopWindow(), &rect);
+	rect.left = (rect.right - width) / 2;
+	rect.top = (rect.bottom - height) / 2;
+	rect.right = (rect.right + width) / 2;
+	rect.bottom = (rect.bottom + height) / 2;
+	AdjustWindowRectEx(&rect, PAYDAY2_WINDOWED_STYLE, FALSE, WS_EX_OVERLAPPEDWINDOW);
+	SetWindowPos(g_hWnd, HWND_NOTOPMOST, rect.left >= 0 ? rect.left : 0, rect.top >= 0 ? rect.top : 0,
+	             rect.right - rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED);
 }
 
 void FullscreenWindowed()
@@ -24,12 +35,14 @@ void FullscreenWindowed()
 int ChangeDisplayMode(lua_State* L)
 {
 	int mode = luaL_checkint(L, 1);
+	int width = luaL_checkint(L, 2);
+	int height = luaL_checkint(L, 3);
 	switch(mode)
 	{
 	case 0:
 		break;
 	case 1:
-		std::thread(Windowed).detach();
+		std::thread(Windowed, width, height).detach();
 		break;
 	case 2:
 		std::thread(FullscreenWindowed).detach();
