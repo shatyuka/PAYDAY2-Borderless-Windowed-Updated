@@ -6,6 +6,7 @@
 HWND g_hWnd;
 
 #define PAYDAY2_WINDOWED_STYLE (WS_CAPTION | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_MINIMIZEBOX)
+#define PAYDAY2_FULLSCREEN_WINDOWED_STYLE (WS_POPUP | WS_VISIBLE | WS_CLIPSIBLINGS)
 
 void Windowed(int width, int height)
 {
@@ -19,13 +20,13 @@ void Windowed(int width, int height)
 	rect.bottom = (rect.bottom + height) / 2;
 	AdjustWindowRectEx(&rect, PAYDAY2_WINDOWED_STYLE, FALSE, WS_EX_OVERLAPPEDWINDOW);
 	SetWindowPos(g_hWnd, HWND_NOTOPMOST, rect.left >= 0 ? rect.left : 0, rect.top >= 0 ? rect.top : 0,
-	             rect.right - rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED);
+		rect.right - rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED);
 }
 
 void FullscreenWindowed()
 {
 	Sleep(100);
-	SetWindowLong(g_hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE | WS_CLIPSIBLINGS);
+	SetWindowLong(g_hWnd, GWL_STYLE, PAYDAY2_FULLSCREEN_WINDOWED_STYLE);
 	SetWindowLong(g_hWnd, GWL_EXSTYLE, 0);
 	RECT rect;
 	GetWindowRect(GetDesktopWindow(), &rect);
@@ -37,7 +38,7 @@ int ChangeDisplayMode(lua_State* L)
 	int mode = luaL_checkint(L, 1);
 	int width = luaL_checkint(L, 2);
 	int height = luaL_checkint(L, 3);
-	switch(mode)
+	switch (mode)
 	{
 	case 0:
 		break;
@@ -48,7 +49,7 @@ int ChangeDisplayMode(lua_State* L)
 		std::thread(FullscreenWindowed).detach();
 		break;
 	default:
-		PD2HOOK_LOG_ERROR("Parameter error");
+		PD2HOOK_LOG_ERROR("Invalid parameter");
 	}
 	return 0;
 }
@@ -80,6 +81,6 @@ int Plugin_PushLua(lua_State* L)
 
 	lua_pushcfunction(L, ChangeDisplayMode);
 	lua_setfield(L, -2, "change_display_mode");
-	
+
 	return 1;
 }
