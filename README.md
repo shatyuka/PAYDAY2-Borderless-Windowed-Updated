@@ -24,6 +24,7 @@ Multi-monitor support.
 ## Credits
 
 [mwSora](https://github.com/mwSora) for his initial version.
+
 [gabsF](https://modworkshop.net/user/46901) Portuguese translation.
 
 ## License
