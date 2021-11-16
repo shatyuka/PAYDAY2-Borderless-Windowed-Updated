@@ -27,19 +27,24 @@ function FullscreenWindowed:load_settings()
 end
 
 Hooks:PostHook(__classes["Application"], "apply_render_settings", "FullscreenWindowedApplyRenderSettings", function(self)
-	FullscreenWindowed.library.change_display_mode(FullscreenWindowed._settings.display_mode, RenderSettings.resolution.x, RenderSettings.resolution.y)
+	FullscreenWindowed.library.change_display_mode(FullscreenWindowed._settings.display_mode, RenderSettings.resolution.x, RenderSettings.resolution.y, RenderSettings.adapter_index)
 end)
 
 Hooks:PostHook(Setup, "init_managers", "FullscreenWindowedInit", function(self, managers)
 	if io.file_is_readable(FullscreenWindowed.save_path) then
 		FullscreenWindowed:load_settings()
-		FullscreenWindowed.library.change_display_mode(FullscreenWindowed._settings.display_mode, RenderSettings.resolution.x, RenderSettings.resolution.y)
+		FullscreenWindowed.library.change_display_mode(FullscreenWindowed._settings.display_mode, RenderSettings.resolution.x, RenderSettings.resolution.y, RenderSettings.adapter_index)
 	else
 		FullscreenWindowed._settings.display_mode = managers.viewport:is_fullscreen() and 0 or 1
 	end
 end)
 
 Hooks:PostHook(MenuOptionInitiator, "modify_video", "FullscreenWindowedDisplayMode", function(self, node)
+	local adapter_item = node:item("choose_video_adapter")
+	if adapter_item then
+		adapter_item:set_enabled(FullscreenWindowed._settings.display_mode ~= 1)
+	end
+
 	local br_item = node:item("brightness")
 	if br_item then
 		br_item:set_enabled(FullscreenWindowed._settings.display_mode == 0)
@@ -53,13 +58,13 @@ Hooks:PostHook(MenuOptionInitiator, "modify_video", "FullscreenWindowedDisplayMo
 		end
 
 		managers.viewport:set_fullscreen(choice == 0)
-		FullscreenWindowed.library.change_display_mode(choice, RenderSettings.resolution.x, RenderSettings.resolution.y)
+		FullscreenWindowed.library.change_display_mode(choice, RenderSettings.resolution.x, RenderSettings.resolution.y, RenderSettings.adapter_index)
 		local old_display_mode = FullscreenWindowed._settings.display_mode
 		FullscreenWindowed._settings.display_mode = choice
 		FullscreenWindowed:save_settings()
 		managers.menu:show_accept_gfx_settings_dialog(function ()
 			managers.viewport:set_fullscreen(old_display_mode == 0)
-			FullscreenWindowed.library.change_display_mode(old_display_mode, RenderSettings.resolution.x, RenderSettings.resolution.y)
+			FullscreenWindowed.library.change_display_mode(old_display_mode, RenderSettings.resolution.x, RenderSettings.resolution.y, RenderSettings.adapter_index)
 			FullscreenWindowed._settings.display_mode = old_display_mode
 			FullscreenWindowed:save_settings()
 			dm_item:set_value(FullscreenWindowed._settings.old_display_mode)
@@ -123,12 +128,12 @@ function MenuCallbackHandler:change_resolution(item)
 
 	managers.viewport:set_resolution(item:parameters().resolution)
 	managers.viewport:set_aspect_ratio(item:parameters().resolution.x / item:parameters().resolution.y)
-	FullscreenWindowed.library.change_display_mode(FullscreenWindowed._settings.display_mode, item:parameters().resolution.x, item:parameters().resolution.y)
+	FullscreenWindowed.library.change_display_mode(FullscreenWindowed._settings.display_mode, item:parameters().resolution.x, item:parameters().resolution.y, RenderSettings.adapter_index)
 
 	local function on_decline()
 		managers.viewport:set_resolution(old_resolution)
 		managers.viewport:set_aspect_ratio(old_resolution.x / old_resolution.y)
-		FullscreenWindowed.library.change_display_mode(FullscreenWindowed._settings.display_mode, old_resolution.x, old_resolution.y)
+		FullscreenWindowed.library.change_display_mode(FullscreenWindowed._settings.display_mode, old_resolution.x, old_resolution.y, RenderSettings.adapter_index)
 	end
 
 	managers.menu:show_accept_gfx_settings_dialog(on_decline)

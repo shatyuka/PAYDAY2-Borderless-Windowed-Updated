@@ -3,7 +3,7 @@
 	"description" : "An updated version of Borderless Windowed plugin.",
 	"author" : "Shatyuka",
 	"contact" : "https://t.me/Shatyuka",
-	"version" : "1.5",
+	"version" : "1.6",
 	"blt_version" : 2,
 	"priority" : 1,
 	"color" : "255 255 255",
