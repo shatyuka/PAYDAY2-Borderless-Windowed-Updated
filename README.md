@@ -17,10 +17,6 @@ This plugin provides every languages that of PAYDAY 2.
 
 If you find something inappropriate, please contact me ASAP.
 
-## TODO
-
-Multi-monitor support.
-
 ## Credits
 
 [mwSora](https://github.com/mwSora) for his initial version.
